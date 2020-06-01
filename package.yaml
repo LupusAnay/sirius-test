@@ -1,0 +1,56 @@
+name:                sirius-test
+version:             0.1.0.0
+github:              "lupusanay/sirius-test"
+license:             MIT
+author:              "Ilya Kopeshtianski"
+maintainer:          "lupusanay@gmail.com"
+copyright:           "2020 Ilya Kopeshtianski"
+verbatim:
+  cabal-version: 3.0
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            App category here
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/lupusanay/sirius-test#readme>
+
+default-extensions:
+  - AllowAmbiguousTypes
+  - DataKinds
+  - DeriveGeneric
+  - DuplicateRecordFields
+  - TypeOperators
+  - KindSignatures
+  - FlexibleContexts
+  - NoMonomorphismRestriction
+  - TypeApplications
+  - OverloadedStrings
+  - TypeFamilies
+  - OverloadedLabels
+  - GeneralizedNewtypeDeriving
+
+dependencies:
+  - base
+  - text
+  - mtl
+  - lens
+  - generic-lens
+  - servant
+  - hasql
+  - Cabal
+
+library:
+  source-dirs: src
+  ghc-options:
+    - -Wall
+
+
+executable:
+  source-dirs: app
+  main: Main.hs
+  ghc-options:
+    - -Wall
+  dependencies:
+    - sirius-test
