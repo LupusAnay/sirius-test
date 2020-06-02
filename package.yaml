@@ -30,7 +30,7 @@ default-extensions:
   - TypeFamilies
   - OverloadedLabels
   - GeneralizedNewtypeDeriving
-
+  - DerivingStrategies
 dependencies:
   - base
   - text
@@ -38,7 +38,17 @@ dependencies:
   - lens
   - generic-lens
   - servant
+  - servant-server
+  - warp
   - hasql
+  - hasql-pool
+  - hasql-th
+  - aeson
+  - wai
+  - either
+  - bytestring
+  - profunctors
+  - vector
   - Cabal
 
 library:

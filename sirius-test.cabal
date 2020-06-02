@@ -22,21 +22,38 @@ source-repository head
 
 library
   exposed-modules:
+      Api
+      App
+      Data
+      Database
+      Error
+      Handlers
       Lib
+      Server
   other-modules:
       Paths_sirius_test
   build-depends:
       Cabal
+    , aeson
     , base
+    , bytestring
+    , either
     , generic-lens
     , hasql
+    , hasql-pool
+    , hasql-th
     , lens
     , mtl
+    , profunctors
     , servant
+    , servant-server
     , text
+    , vector
+    , wai
+    , warp
   hs-source-dirs:
       src
-  default-extensions: AllowAmbiguousTypes DataKinds DeriveGeneric DuplicateRecordFields TypeOperators KindSignatures FlexibleContexts NoMonomorphismRestriction TypeApplications OverloadedStrings TypeFamilies OverloadedLabels GeneralizedNewtypeDeriving
+  default-extensions: AllowAmbiguousTypes DataKinds DeriveGeneric DuplicateRecordFields TypeOperators KindSignatures FlexibleContexts NoMonomorphismRestriction TypeApplications OverloadedStrings TypeFamilies OverloadedLabels GeneralizedNewtypeDeriving DerivingStrategies
   ghc-options: -Wall
   default-language: Haskell2010
 
@@ -46,16 +63,26 @@ executable sirius-test
       Paths_sirius_test
   build-depends:
       Cabal
+    , aeson
     , base
+    , bytestring
+    , either
     , generic-lens
     , hasql
+    , hasql-pool
+    , hasql-th
     , lens
     , mtl
+    , profunctors
     , servant
+    , servant-server
     , sirius-test
     , text
+    , vector
+    , wai
+    , warp
   hs-source-dirs:
       app
-  default-extensions: AllowAmbiguousTypes DataKinds DeriveGeneric DuplicateRecordFields TypeOperators KindSignatures FlexibleContexts NoMonomorphismRestriction TypeApplications OverloadedStrings TypeFamilies OverloadedLabels GeneralizedNewtypeDeriving
+  default-extensions: AllowAmbiguousTypes DataKinds DeriveGeneric DuplicateRecordFields TypeOperators KindSignatures FlexibleContexts NoMonomorphismRestriction TypeApplications OverloadedStrings TypeFamilies OverloadedLabels GeneralizedNewtypeDeriving DerivingStrategies
   ghc-options: -Wall
   default-language: Haskell2010
