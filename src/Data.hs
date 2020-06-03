@@ -20,7 +20,7 @@ import qualified Data.Text as T
 import Data.Time (NominalDiffTime)
 import GHC.Generics (Generic)
 
--- | Type synonym used throught all aplication as ideantifier
+-- | A generic synonym used throughout the application as an identifier
 type Id = Int
 
 -- | Representation of node in database

@@ -18,7 +18,7 @@ import GHC.Generics (Generic)
 import Hasql.Pool (UsageError (..))
 import Servant (ServerError (..), err400, err404, err500, err503)
 
--- | SuperError, wrapper for all error types in appliation
+-- | SuperError, wrapper for all error types in application
 data Error
   = DatabaseError UsageError
   | ObjectNotFoundError Id

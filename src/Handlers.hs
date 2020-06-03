@@ -29,7 +29,7 @@ listNodes = do
   runSession DB.getNodes
 
 -- | Create node handler. 
--- Accepts NewNode object {"lable": "Example Labe"}
+-- Accepts NewNode object {"label": "Example Label"}
 -- Returning Id of created Node 
 createNode :: (MonadDB m) => NewNode -> m Id
 createNode = runSession . DB.createNode

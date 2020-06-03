@@ -3,7 +3,7 @@
 
 -- |
 -- Module : Database
--- Description : Containsq Hasql sessions with decoders
+-- Description : Contains Hasql sessions with decoders
 module Database
   ( MonadDB (..),
     createNode,
