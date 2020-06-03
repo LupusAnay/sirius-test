@@ -55,7 +55,8 @@
                 },
                 "produces": [
                     "application/json;charset=utf-8"
-                ]
+                ],
+                "description": "Retrieve all nodes"
             },
             "put": {
                 "consumes": [
@@ -86,7 +87,8 @@
                         "in": "body",
                         "name": "body"
                     }
-                ]
+                ],
+                "description": "Create new node"
             }
         },
         "/graph/node/{id}": {
@@ -108,7 +110,8 @@
                         "name": "id",
                         "type": "integer"
                     }
-                ]
+                ],
+                "description": "Remove node by id"
             },
             "put": {
                 "consumes": [
@@ -142,7 +145,8 @@
                         "in": "body",
                         "name": "body"
                     }
-                ]
+                ],
+                "description": "Update node by id"
             }
         },
         "/graph/node/{id}/neighbours": {
@@ -173,7 +177,8 @@
                         "name": "id",
                         "type": "integer"
                     }
-                ]
+                ],
+                "description": "Return all nodes connected to specified through links"
             }
         },
         "/graph/link/{id_from}/{id_to}": {
@@ -181,6 +186,9 @@
                 "responses": {
                     "404": {
                         "description": "`id_from` or `id_to` not found"
+                    },
+                    "400": {
+                        "description": "link `id_from` <-> `id_to already exist"
                     },
                     "204": {
                         "description": ""
@@ -203,7 +211,8 @@
                         "name": "id_to",
                         "type": "integer"
                     }
-                ]
+                ],
+                "description": "Create new link betwen node `id_from` to `id_to`"
             }
         }
     }
