@@ -4,8 +4,8 @@
   "dbUser": "postgres",
   "dbName": "postgres",
   "dbPassword": "postgres",
-	"dbPoolSize": 1,
-	"dbPoolTimeout": 1,
+  "dbPoolSize": 1,
+  "dbPoolTimeout": 1,
   "serverPort": 8001,
-	"logLevel": "warn"
+  "logLevel": "warn"
 }
