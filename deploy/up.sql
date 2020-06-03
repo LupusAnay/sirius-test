@@ -11,8 +11,10 @@ create table nodes
 create table links
 (
 	id serial not null constraint links_pk primary key,
-	from_id integer constraint links_nodes_id_fk references nodes,
-	to_id integer constraint links_nodes_id_fk_2 references nodes,
+	from_id integer constraint links_nodes_id_fk references 
+		nodes on delete cascade,
+	to_id integer constraint links_nodes_id_fk_2 references 
+		nodes on delete cascade,
 	constraint links_unique_together unique (from_id, to_id),
 	constraint links_loops check (from_id != to_id)
 );

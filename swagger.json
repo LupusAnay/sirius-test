@@ -1,0 +1,210 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "1.0",
+        "title": "Graph API",
+        "license": {
+            "url": "http://mit.com",
+            "name": "MIT"
+        },
+        "description": "This is an API for sirius test"
+    },
+    "definitions": {
+        "Node": {
+            "required": [
+                "id",
+                "label"
+            ],
+            "type": "object",
+            "properties": {
+                "id": {
+                    "maximum": 9223372036854775807,
+                    "minimum": -9223372036854775808,
+                    "type": "integer"
+                },
+                "label": {
+                    "type": "string"
+                }
+            }
+        },
+        "NewNode": {
+            "required": [
+                "label"
+            ],
+            "type": "object",
+            "properties": {
+                "label": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "paths": {
+        "/graph/node": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "schema": {
+                            "items": {
+                                "$ref": "#/definitions/Node"
+                            },
+                            "type": "array"
+                        },
+                        "description": ""
+                    }
+                },
+                "produces": [
+                    "application/json;charset=utf-8"
+                ]
+            },
+            "put": {
+                "consumes": [
+                    "application/json;charset=utf-8"
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Invalid `body`"
+                    },
+                    "200": {
+                        "schema": {
+                            "maximum": 9223372036854775807,
+                            "minimum": -9223372036854775808,
+                            "type": "integer"
+                        },
+                        "description": ""
+                    }
+                },
+                "produces": [
+                    "application/json;charset=utf-8"
+                ],
+                "parameters": [
+                    {
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/NewNode"
+                        },
+                        "in": "body",
+                        "name": "body"
+                    }
+                ]
+            }
+        },
+        "/graph/node/{id}": {
+            "delete": {
+                "responses": {
+                    "404": {
+                        "description": "`id` not found"
+                    },
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "parameters": [
+                    {
+                        "maximum": 9223372036854775807,
+                        "minimum": -9223372036854775808,
+                        "required": true,
+                        "in": "path",
+                        "name": "id",
+                        "type": "integer"
+                    }
+                ]
+            },
+            "put": {
+                "consumes": [
+                    "application/json;charset=utf-8"
+                ],
+                "responses": {
+                    "404": {
+                        "description": "`id` not found"
+                    },
+                    "400": {
+                        "description": "Invalid `body`"
+                    },
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "parameters": [
+                    {
+                        "maximum": 9223372036854775807,
+                        "minimum": -9223372036854775808,
+                        "required": true,
+                        "in": "path",
+                        "name": "id",
+                        "type": "integer"
+                    },
+                    {
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/NewNode"
+                        },
+                        "in": "body",
+                        "name": "body"
+                    }
+                ]
+            }
+        },
+        "/graph/node/{id}/neighbours": {
+            "get": {
+                "responses": {
+                    "404": {
+                        "description": "`id` not found"
+                    },
+                    "200": {
+                        "schema": {
+                            "items": {
+                                "$ref": "#/definitions/Node"
+                            },
+                            "type": "array"
+                        },
+                        "description": ""
+                    }
+                },
+                "produces": [
+                    "application/json;charset=utf-8"
+                ],
+                "parameters": [
+                    {
+                        "maximum": 9223372036854775807,
+                        "minimum": -9223372036854775808,
+                        "required": true,
+                        "in": "path",
+                        "name": "id",
+                        "type": "integer"
+                    }
+                ]
+            }
+        },
+        "/graph/link/{id_from}/{id_to}": {
+            "put": {
+                "responses": {
+                    "404": {
+                        "description": "`id_from` or `id_to` not found"
+                    },
+                    "204": {
+                        "description": ""
+                    }
+                },
+                "parameters": [
+                    {
+                        "maximum": 9223372036854775807,
+                        "minimum": -9223372036854775808,
+                        "required": true,
+                        "in": "path",
+                        "name": "id_from",
+                        "type": "integer"
+                    },
+                    {
+                        "maximum": 9223372036854775807,
+                        "minimum": -9223372036854775808,
+                        "required": true,
+                        "in": "path",
+                        "name": "id_to",
+                        "type": "integer"
+                    }
+                ]
+            }
+        }
+    }
+}

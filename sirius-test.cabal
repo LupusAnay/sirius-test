@@ -35,6 +35,7 @@ library
   build-depends:
       Cabal
     , aeson
+    , aeson-pretty
     , base
     , bytestring
     , either
@@ -47,6 +48,8 @@ library
     , profunctors
     , servant
     , servant-server
+    , servant-swagger
+    , swagger2
     , text
     , vector
     , wai
@@ -64,6 +67,7 @@ executable sirius-test
   build-depends:
       Cabal
     , aeson
+    , aeson-pretty
     , base
     , bytestring
     , either
@@ -76,7 +80,9 @@ executable sirius-test
     , profunctors
     , servant
     , servant-server
+    , servant-swagger
     , sirius-test
+    , swagger2
     , text
     , vector
     , wai

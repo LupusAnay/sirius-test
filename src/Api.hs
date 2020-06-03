@@ -3,6 +3,7 @@ module Api
     GraphRoutes (..),
     LinkRoutes (..),
     NodeRoutes (..),
+    api
   )
 where
 
@@ -45,3 +46,6 @@ data NodeRoutes route
             :- Capture "id" Id :> "neighbours" :> Get '[JSON] [Node]
       }
   deriving (Generic)
+
+api :: Proxy (ToServantApi Routes)
+api = genericApi (Proxy :: Proxy Routes)

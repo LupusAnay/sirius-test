@@ -39,11 +39,14 @@ dependencies:
   - generic-lens
   - servant
   - servant-server
+  - servant-swagger
+  - swagger2
   - warp
   - hasql
   - hasql-pool
   - hasql-th
   - aeson
+  - aeson-pretty
   - wai
   - either
   - bytestring

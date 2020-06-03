@@ -8,7 +8,7 @@ import Control.Monad.Except (MonadError)
 import Control.Monad.IO.Class (MonadIO)
 import Data (Id, NewNode (..), Node (..))
 import Data.Generics.Labels ()
-import Data.Profunctor (dimap, lmap, rmap)
+import Data.Profunctor (dimap, rmap)
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import Error (Error (..))
@@ -27,7 +27,7 @@ createNode node = HS.statement node statement
     statement = dimap (^. #label) fromIntegral query
     query =
       [singletonStatement|
-        insert into "links" (label) values ($1 :: text) returning id :: int4|]
+        insert into "nodes" (label) values ($1 :: text) returning id :: int4|]
 
 getNodes :: HS.Session [Node]
 getNodes = HS.statement () statement
@@ -35,22 +35,24 @@ getNodes = HS.statement () statement
     statement = rmap (V.toList . V.map nodeDecoder) query
     query =
       [vectorStatement|
-        select "n.id" :: int4, "n.label" :: text from "nodes" n |]
+        select n.id :: int4, n.label :: text from "nodes" n |]
 
-deleteNode :: Id -> HS.Session ()
+deleteNode :: Id -> HS.Session (Maybe Int)
 deleteNode nodeId = HS.statement nodeId statement
   where
-    statement = lmap fromIntegral query
-    query = [resultlessStatement| delete from "nodes" where "id" = $1 :: int4|]
+    statement = dimap fromIntegral (fmap fromIntegral) query
+    query =
+      [maybeStatement| delete from "nodes" where "id" = $1 :: int4
+        returning "id" :: int4|]
 
-updateNode :: Id -> NewNode -> HS.Session ()
+updateNode :: Id -> NewNode -> HS.Session (Maybe Node)
 updateNode nodeId node = HS.statement (nodeId, node) statement
   where
     encoder (_id, _node) = (fromIntegral _id, _node ^. #label)
-    statement = lmap encoder query
+    statement = dimap encoder (fmap nodeDecoder) query
     query =
-      [singletonStatement|
-        update "nodes" set "label" = $2 :: text where "id" = $1 :: int4|]
+      [maybeStatement|
+        update "nodes" set "label" = $2 :: text where "id" = $1 :: int4 returning id :: int4, label :: text|]
 
 listNeighbours :: Id -> HS.Session [Node]
 listNeighbours nodeId = HS.statement nodeId statement
@@ -65,11 +67,12 @@ listNeighbours nodeId = HS.statement nodeId statement
           join "links" l on n.id = l.from_id where l.to_id = ($1 :: int4)
         |]
 
-createLink :: Id -> Id -> HS.Session ()
+createLink :: Id -> Id -> HS.Session (Maybe Int)
 createLink id1 id2 = HS.statement (id1, id2) statement
   where
     encoder (_id1, _id2) = (fromIntegral id1, fromIntegral id2)
-    statement = lmap encoder query
+    statement = dimap encoder (fmap fromIntegral) query
     query =
-      [resultlessStatement|
-          insert into "links" (from_id, to_id) values ($1 :: int4, $2 :: int4)|]
+      [maybeStatement|
+          insert into "links" (from_id, to_id) values ($1 :: int4, $2 :: int4) 
+          returning "id" :: int4|]
