@@ -14,7 +14,7 @@ import Control.Lens ((&), (.~), (?~), (^.))
 import Control.Monad.Except (ExceptT, MonadError, liftEither)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.IO.Class (MonadIO (liftIO))
-import Control.Monad.Logger
+import Control.Monad.Logger (LoggingT, MonadLogger)
 import Control.Monad.Reader (MonadReader, ReaderT, ask)
 import Data (Config (..))
 import Data.Aeson.Encode.Pretty (encodePretty)
@@ -22,12 +22,21 @@ import qualified Data.ByteString.Lazy.Char8 as BL8
 import Data.Either.Combinators (mapBoth, mapLeft)
 import Data.Generics.Labels ()
 import Data.Swagger
+  ( Swagger (..),
+    URL (..),
+    description,
+    info,
+    license,
+    title,
+    url,
+    version,
+  )
 import Database (MonadDB (..))
 import Error (Error (..))
 import GHC.Generics (Generic)
 import Hasql.Pool (Pool)
 import Hasql.Pool (use)
-import Servant.Swagger
+import Servant.Swagger (toSwagger)
 
 -- | Read-only app aata
 data Env
