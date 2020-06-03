@@ -1,9 +1,10 @@
 module Main where
 
-import qualified Data.ByteString as BS
 import Hasql.Pool (acquire)
 import Lib (Env (..), app)
 import Network.Wai.Handler.Warp (run)
+import Servant (JSON)
+import Network.Wai.Middleware.Servant.Errors
 
 main :: IO ()
 main = do
@@ -11,17 +12,6 @@ main = do
     acquire
       ( 2,
         1,
-        BS.concat
-          [ "host=",
-            "localhost",
-            " port=",
-            "5432",
-            " user=",
-            "lupusanay",
-            " dbname=",
-            "sirius",
-            " password=",
-            "qwerty"
-          ]
+        "postgresql://lupusanay:qwerty@localhost/sirius"
       )
-  run 8001 $ app (Env dbPool)
+  run 8001 $ errorMw @JSON @["error", "status"] $ app (Env dbPool)

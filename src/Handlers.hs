@@ -15,9 +15,12 @@ import Database (MonadDB (..))
 import qualified Database as DB
 import Error
 import Servant (NoContent (..))
+import Control.Monad.Logger (logInfoN, MonadLogger)
 
-listNodes :: (MonadDB m) => m [Node]
-listNodes = runSession DB.getNodes
+listNodes :: (MonadDB m, MonadLogger m) => m [Node]
+listNodes = do 
+  logInfoN "Getting Nodes"
+  runSession DB.getNodes
 
 createNode :: (MonadDB m) => NewNode -> m Id
 createNode = runSession . DB.createNode

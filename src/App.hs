@@ -11,6 +11,7 @@ import Control.Lens ((&), (.~), (?~), (^.))
 import Control.Monad.Except (ExceptT, MonadError, liftEither)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.IO.Class (MonadIO (liftIO))
+import Control.Monad.Logger
 import Control.Monad.Reader (MonadReader, ReaderT, ask)
 import Data.Aeson.Encode.Pretty (encodePretty)
 import qualified Data.ByteString.Lazy.Char8 as BL8
@@ -32,7 +33,7 @@ data Env
 
 newtype AppM a
   = AppM
-      { runAppM :: ReaderT Env (ExceptT Error IO) a
+      { runAppM :: ReaderT Env (LoggingT (ExceptT Error IO)) a
       }
   deriving
     ( Functor,
@@ -40,7 +41,8 @@ newtype AppM a
       Monad,
       MonadIO,
       MonadReader Env,
-      MonadError Error
+      MonadError Error,
+      MonadLogger
     )
 
 instance MonadDB AppM where
