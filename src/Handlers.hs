@@ -21,16 +21,16 @@ import qualified Database as DB
 import Error
 import Servant (NoContent (..))
 
--- | List all nodes handler. 
+-- | List all nodes handler.
 -- Returns list of nodes
 listNodes :: (MonadDB m, MonadLogger m) => m [Node]
 listNodes = do
   logInfoN "Getting Nodes"
   runSession DB.getNodes
 
--- | Create node handler. 
+-- | Create node handler.
 -- Accepts NewNode object {"label": "Example Label"}
--- Returning Id of created Node 
+-- Returning Id of created Node
 createNode :: (MonadDB m) => NewNode -> m Id
 createNode = runSession . DB.createNode
 
@@ -79,7 +79,7 @@ createLink id1 id2
     runSession_ (DB.createLink id1 id2)
     pure NoContent
 
--- | Helper function. 
+-- | Helper function.
 -- Accepts Maybe and Id and throws NotFound Error if Maybe is Nothing
 maybeToNotFound :: (MonadError Error m) => Id -> Maybe a -> m a
 maybeToNotFound _ (Just a) = pure a
