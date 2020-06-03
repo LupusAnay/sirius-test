@@ -11,15 +11,9 @@ import Api
   )
 import App
 import Control.Monad.Except (MonadError (throwError), catchError, withExceptT)
-import Control.Monad.Logger
-  ( MonadLogger,
-    logErrorN,
-    logInfoN,
-    runStderrLoggingT,
-  )
+import Control.Monad.Logger (runStderrLoggingT)
 import Control.Monad.Reader (runReaderT)
 import Data.Generics.Labels ()
-import qualified Data.Text as T
 import Error
 import qualified Handlers as H
 import Servant (Application, Handler (..))
@@ -56,25 +50,15 @@ routesServer =
     }
 
 nt :: Env -> AppM a -> Handler a
-nt env appValue = Handler $ handler
+nt env appValue = Handler $ servantValue
   where
-    reader = runAppM appValue
-    root = do
-      runReaderT reader env
-        `catchError` ( \e -> do
-                         logError e
-                         throwError e
-                     )
-    logging = runStderrLoggingT root
-    handler = withExceptT convert logging
+    readerValue = runAppM appValue
+    loggingValue = runReaderT readerValue env `catchError` errorHandler
+    exceptValue = runStderrLoggingT loggingValue
+    servantValue = withExceptT convert exceptValue
+    errorHandler e = do
+      logError e
+      throwError e
 
 app :: Env -> Application
 app state = genericServeT (nt state) routesServer
-
-logError :: MonadLogger m => Error -> m ()
-logError (DatabaseError e) =
-  logErrorN (T.pack $ show e)
-logError (ObjectNotFoundError objId) =
-  logInfoN $ T.concat ["Requested object not found: ", T.pack . show $ objId]
-logError (LoopLinksForbidden) =
-  logInfoN "Loop links are forbidden"

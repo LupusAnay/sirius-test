@@ -60,12 +60,11 @@ listNeighbours nodeId = HS.statement nodeId statement
     statement = dimap fromIntegral (V.toList . V.map nodeDecoder) query
     query =
       [vectorStatement|
-          select n.id :: int4, n.label :: text from "nodes" n
-          join "links" l on n.id = l.to_id where l.from_id = ($1 :: int4)
-          union
-          select n.id :: int4, n.label :: text from "nodes" n
-          join "links" l on n.id = l.from_id where l.to_id = ($1 :: int4)
-        |]
+        select n.id :: int4, n.label :: text from "nodes" n
+        join "links" l on n.id = l.to_id where l.from_id = ($1 :: int4)
+        union
+        select n.id :: int4, n.label :: text from "nodes" n
+        join "links" l on n.id = l.from_id where l.to_id = ($1 :: int4)|]
 
 createLink :: Id -> Id -> HS.Session (Maybe Int)
 createLink id1 id2 = HS.statement (id1, id2) statement
@@ -74,5 +73,5 @@ createLink id1 id2 = HS.statement (id1, id2) statement
     statement = dimap encoder (fmap fromIntegral) query
     query =
       [maybeStatement|
-          insert into "links" (from_id, to_id) values ($1 :: int4, $2 :: int4) 
-          returning "id" :: int4|]
+        insert into "links" (from_id, to_id) values ($1 :: int4, $2 :: int4)
+        returning "id" :: int4|]

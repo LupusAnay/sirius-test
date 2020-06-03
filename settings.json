@@ -1,0 +1,11 @@
+{
+  "dbHost": "localhost",
+  "dbPort": 5432,
+  "dbUser": "postgres",
+  "dbName": "postgres",
+  "dbPassword": "postgres",
+	"dbPoolSize": 1,
+	"dbPoolTimeout": 1,
+  "serverPort": 8001,
+	"logLevel": "warn"
+}

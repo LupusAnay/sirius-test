@@ -24,12 +24,14 @@ import GHC.Generics (Generic)
 import Hasql.Pool (Pool)
 import Hasql.Pool (use)
 import Servant.Swagger
-
+import Data (Config(..))
 data Env
   = Env
       { pool :: Pool
+      , config :: Config
       }
   deriving (Generic)
+
 
 newtype AppM a
   = AppM

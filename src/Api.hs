@@ -3,7 +3,7 @@ module Api
     GraphRoutes (..),
     LinkRoutes (..),
     NodeRoutes (..),
-    api
+    api,
   )
 where
 

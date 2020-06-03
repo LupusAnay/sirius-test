@@ -1,8 +1,10 @@
-module Error (Error (..), ToServerError (..)) where
+module Error (Error (..), ToServerError (..), logError) where
 
 import Control.Exception (Exception)
+import Control.Monad.Logger (MonadLogger, logErrorN, logInfoN)
 import Data
 import qualified Data.ByteString.Lazy.Char8 as LBS
+import qualified Data.Text as T
 import GHC.Generics (Generic)
 import Hasql.Pool (UsageError (..))
 import Hasql.Session (CommandError (..), QueryError (..))
@@ -44,11 +46,16 @@ instance ToServerError CommandError where
   convert (ResultError err) = convert err
 
 instance ToServerError S.ResultError where
-  convert (S.ServerError _ message _ _) =
-    err400 {errBody = LBS.fromStrict message}
-  convert (S.UnexpectedResult _) =
-    err500 {errBody = "Unexpected Result"}
-  convert (S.RowError _ err) =
-    err500 {errBody = LBS.pack . show $ err}
+  convert (S.ServerError _ msg _ _) = err400 {errBody = LBS.fromStrict msg}
+  convert (S.UnexpectedResult _) = err500 {errBody = "Unexpected Result"}
+  convert (S.RowError _ err) = err500 {errBody = LBS.pack . show $ err}
   convert (S.UnexpectedAmountOfRows _) =
     err500 {errBody = "Unexpected amount of rows"}
+
+logError :: MonadLogger m => Error -> m ()
+logError (DatabaseError e) =
+  logErrorN (T.pack $ show e)
+logError (ObjectNotFoundError objId) =
+  logInfoN $ T.concat ["Requested object not found: ", T.pack . show $ objId]
+logError (LoopLinksForbidden) =
+  logInfoN "Loop links are forbidden"

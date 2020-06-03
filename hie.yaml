@@ -1,1 +1,6 @@
-cradle: {cabal: {component: "lib:sirius-test"}}
+cradle:
+  multi:
+    - path: "./src"
+      config: { cradle: {cabal: {component: "lib:sirius-test"}} }
+    - path: "./app"
+      config: { cradle: {cabal: {component: "exe:sirius-test"}} }

@@ -53,13 +53,14 @@ library
     , servant-swagger
     , swagger2
     , text
+    , time
     , vector
     , wai
     , warp
   hs-source-dirs:
       src
   default-extensions: AllowAmbiguousTypes DataKinds DeriveGeneric DuplicateRecordFields TypeOperators KindSignatures FlexibleContexts NoMonomorphismRestriction TypeApplications OverloadedStrings TypeFamilies OverloadedLabels GeneralizedNewtypeDeriving DerivingStrategies
-  ghc-options: -Wall
+  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Wnoncanonical-monad-instances
   default-language: Haskell2010
 
 executable sirius-test
@@ -88,11 +89,12 @@ executable sirius-test
     , sirius-test
     , swagger2
     , text
+    , time
     , vector
     , wai
     , warp
   hs-source-dirs:
       app
   default-extensions: AllowAmbiguousTypes DataKinds DeriveGeneric DuplicateRecordFields TypeOperators KindSignatures FlexibleContexts NoMonomorphismRestriction TypeApplications OverloadedStrings TypeFamilies OverloadedLabels GeneralizedNewtypeDeriving DerivingStrategies
-  ghc-options: -Wall
+  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Wnoncanonical-monad-instances
   default-language: Haskell2010
