@@ -9,7 +9,10 @@ import Hasql.Session (CommandError (..), QueryError (..))
 import qualified Hasql.Session as S (ResultError (..))
 import Servant (ServerError (..), err400, err404, err500, err503)
 
-data Error = DatabaseError UsageError | ObjectNotFoundError Id
+data Error
+  = DatabaseError UsageError
+  | ObjectNotFoundError Id
+  | LoopLinksForbidden
   deriving (Generic, Show)
 
 instance Exception Error
@@ -26,6 +29,7 @@ notFoundMessage objId =
 instance ToServerError Error where
   convert (DatabaseError e) = convert e
   convert (ObjectNotFoundError objId) = err404 {errBody = notFoundMessage objId}
+  convert (LoopLinksForbidden) = err400 {errBody = "Loop edges are not allowed"}
 
 instance ToServerError UsageError where
   convert (ConnectionError e) = err503 {errBody = LBS.pack . show $ e}
