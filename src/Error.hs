@@ -5,6 +5,7 @@ import Control.Monad.Logger (LogLevel (..), MonadLogger, logErrorN, logInfoN)
 import Data
 import qualified Data.ByteString.Lazy.Char8 as LBS
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as Text.Encoding
 import GHC.Generics (Generic)
 import Hasql.Pool (UsageError (..))
 import Hasql.Session (CommandError (..), QueryError (..))
@@ -43,12 +44,9 @@ instance ToServerError QueryError where
   convert level (QueryError _ _ e) = convert level e
 
 instance ToServerError CommandError where
-  convert LevelDebug (ClientError (Just err)) =
-    err500 {errBody = LBS.fromStrict err}
-  convert _ (ClientError _) = err500
-  convert LevelDebug (ClientError Nothing) =
-    err500 {errBody = "Unknown database error: ClientError Nothing"}
   convert level (ResultError err) = convert level err
+  convert LevelDebug e = err500 {errBody = LBS.pack . show $ e}
+  convert _ (ClientError _) = err500
 
 instance ToServerError S.ResultError where
   convert LevelDebug e = err500 {errBody = LBS.pack . show $ e}
@@ -57,6 +55,5 @@ instance ToServerError S.ResultError where
 logError :: MonadLogger m => Error -> m ()
 logError (DatabaseError e) = logErrorN (T.pack $ show e)
 logError (ObjectNotFoundError objId) =
-  logInfoN $ T.concat ["Requested object not found: ", T.pack . show $ objId]
-logError (LoopLinksForbidden) =
-  logInfoN "Loop links are forbidden"
+  logInfoN . Text.Encoding.decodeUtf8 . LBS.toStrict $ notFoundMessage objId
+logError (LoopLinksForbidden) = logInfoN "Loop links are forbidden"
