@@ -10,6 +10,7 @@ import Api
     Routes (..),
   )
 import App
+import Control.Lens ((^.))
 import Control.Monad.Except (MonadError (throwError), catchError, withExceptT)
 import Control.Monad.Logger (runStderrLoggingT)
 import Control.Monad.Reader (runReaderT)
@@ -19,6 +20,7 @@ import qualified Handlers as H
 import Servant (Application, Handler (..))
 import Servant.API.Generic (toServant)
 import Servant.Server.Generic (AsServerT, genericServeT)
+import Control.Monad.Logger.CallStack (filterLogger)
 
 nodesServer :: NodeRoutes (AsServerT AppM)
 nodesServer =
@@ -54,8 +56,10 @@ nt env appValue = Handler $ servantValue
   where
     readerValue = runAppM appValue
     loggingValue = runReaderT readerValue env `catchError` errorHandler
-    exceptValue = runStderrLoggingT loggingValue
-    servantValue = withExceptT convert exceptValue
+    exceptValue = runStderrLoggingT $ filterLogger loggerFilter loggingValue
+    servantValue = withExceptT (convert logLevel) exceptValue
+    logLevel = env ^. #config ^. #logLevel
+    loggerFilter _ level = level >= logLevel
     errorHandler e = do
       logError e
       throwError e

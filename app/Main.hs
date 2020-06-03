@@ -2,11 +2,11 @@ module Main where
 
 import Control.Exception (IOException, catch)
 import Control.Lens ((^.))
+import Control.Monad.Logger (LogLevel (LevelDebug))
 import Data.Aeson (eitherDecodeFileStrict)
 import Data.Generics.Labels ()
 import qualified Data.Text as T
 import Data.Text.Encoding (encodeUtf8)
-import Data.Time (secondsToNominalDiffTime)
 import Hasql.Pool (acquire)
 import Hasql.Pool (Settings)
 import Lib (Config (..), Env (..), app)
@@ -38,13 +38,8 @@ safeDecodeFile path = catch (eitherDecodeFileStrict path) errorHandler
     errorHandler e = pure (Left $ show (e :: IOException))
 
 dbSettingsFromConfig :: Config -> Settings
-dbSettingsFromConfig conf = (poolSize, poolTimeout, dbUrl)
+dbSettingsFromConfig conf = (conf ^. #dbPoolSize, conf ^. #dbPoolTimeout, dbUrl)
   where
-    poolSize = (conf ^. #dbPoolSize)
-    poolTimeout =
-      secondsToNominalDiffTime
-        . fromIntegral
-        $ conf ^. #dbPoolTimeout
     dbUrl =
       encodeUtf8 $
         T.concat
@@ -71,5 +66,5 @@ defaultConfig =
       dbPoolSize = 1,
       dbPoolTimeout = 1,
       serverPort = 8001,
-      logLevel = "debug"
+      logLevel = LevelDebug
     }

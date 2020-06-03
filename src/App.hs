@@ -13,6 +13,7 @@ import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.IO.Class (MonadIO (liftIO))
 import Control.Monad.Logger
 import Control.Monad.Reader (MonadReader, ReaderT, ask)
+import Data (Config (..))
 import Data.Aeson.Encode.Pretty (encodePretty)
 import qualified Data.ByteString.Lazy.Char8 as BL8
 import Data.Either.Combinators (mapLeft)
@@ -24,14 +25,13 @@ import GHC.Generics (Generic)
 import Hasql.Pool (Pool)
 import Hasql.Pool (use)
 import Servant.Swagger
-import Data (Config(..))
+
 data Env
   = Env
-      { pool :: Pool
-      , config :: Config
+      { pool :: Pool,
+        config :: Config
       }
   deriving (Generic)
-
 
 newtype AppM a
   = AppM

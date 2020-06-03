@@ -8,10 +8,13 @@ module Data
   )
 where
 
-import Data.Aeson (FromJSON)
+import Control.Monad.Logger (LogLevel (..))
+import Data.Aeson ((.:), FromJSON (..))
+import Data.Aeson (withObject)
 import Data.Aeson.Types (ToJSON)
 import Data.Swagger.Schema (ToSchema)
 import qualified Data.Text as T
+import Data.Time (NominalDiffTime)
 import GHC.Generics (Generic)
 
 type Id = Int
@@ -29,7 +32,6 @@ data NewNode
       }
   deriving (Generic, ToJSON, FromJSON, ToSchema)
 
-
 data Config
   = Config
       { dbHost :: T.Text,
@@ -38,9 +40,28 @@ data Config
         dbName :: T.Text,
         dbPassword :: T.Text,
         dbPoolSize :: Int,
-        dbPoolTimeout :: Int,
+        dbPoolTimeout :: NominalDiffTime,
         serverPort :: Int,
-        logLevel :: T.Text
+        logLevel :: LogLevel
       }
-  deriving (Show, Generic, FromJSON, ToJSON)
+  deriving (Show, Generic)
 
+instance FromJSON Config where
+  parseJSON = withObject "config" $ \o ->
+    Config
+      <$> o .: "dbHost"
+      <*> o .: "dbPort"
+      <*> o .: "dbUser"
+      <*> o .: "dbName"
+      <*> o .: "dbPassword"
+      <*> o .: "dbPoolSize"
+      <*> o .: "dbPoolTimeout"
+      <*> o .: "serverPort"
+      <*> (logLevelFromText <$> o .: "logLevel")
+
+logLevelFromText :: T.Text -> LogLevel
+logLevelFromText "debug" = LevelDebug
+logLevelFromText "info" = LevelInfo
+logLevelFromText "warn" = LevelWarn
+logLevelFromText "error" = LevelError
+logLevelFromText level = LevelOther level

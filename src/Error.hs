@@ -1,7 +1,7 @@
 module Error (Error (..), ToServerError (..), logError) where
 
 import Control.Exception (Exception)
-import Control.Monad.Logger (MonadLogger, logErrorN, logInfoN)
+import Control.Monad.Logger (LogLevel (..), MonadLogger, logErrorN, logInfoN)
 import Data
 import qualified Data.ByteString.Lazy.Char8 as LBS
 import qualified Data.Text as T
@@ -20,41 +20,42 @@ data Error
 instance Exception Error
 
 class ToServerError e where
-  convert :: e -> ServerError
-
--- TODO: Rework to support debug/production setting
+  convert :: LogLevel -> e -> ServerError
 
 notFoundMessage :: Show a => a -> LBS.ByteString
 notFoundMessage objId =
   LBS.concat ["Object with id ", LBS.pack $ show objId, " not found"]
 
 instance ToServerError Error where
-  convert (DatabaseError e) = convert e
-  convert (ObjectNotFoundError objId) = err404 {errBody = notFoundMessage objId}
-  convert (LoopLinksForbidden) = err400 {errBody = "Loop edges are not allowed"}
+  convert level (DatabaseError e) = convert level e
+  convert _ (ObjectNotFoundError objId) =
+    err404 {errBody = notFoundMessage objId}
+  convert _ (LoopLinksForbidden) =
+    err400 {errBody = "Loop edges are not allowed"}
 
 instance ToServerError UsageError where
-  convert (ConnectionError e) = err503 {errBody = LBS.pack . show $ e}
-  convert (SessionError e) = convert e
+  convert LevelDebug (ConnectionError e) =
+    err503 {errBody = LBS.pack . show $ e}
+  convert _ (ConnectionError _) = err503
+  convert level (SessionError e) = convert level e
 
 instance ToServerError QueryError where
-  convert (QueryError _ _ e) = convert e
+  convert level (QueryError _ _ e) = convert level e
 
 instance ToServerError CommandError where
-  convert (ClientError (Just err)) = err500 {errBody = LBS.fromStrict err}
-  convert (ClientError Nothing) = err500 {errBody = "Unknown database error"}
-  convert (ResultError err) = convert err
+  convert LevelDebug (ClientError (Just err)) =
+    err500 {errBody = LBS.fromStrict err}
+  convert _ (ClientError _) = err500
+  convert LevelDebug (ClientError Nothing) =
+    err500 {errBody = "Unknown database error: ClientError Nothing"}
+  convert level (ResultError err) = convert level err
 
 instance ToServerError S.ResultError where
-  convert (S.ServerError _ msg _ _) = err400 {errBody = LBS.fromStrict msg}
-  convert (S.UnexpectedResult _) = err500 {errBody = "Unexpected Result"}
-  convert (S.RowError _ err) = err500 {errBody = LBS.pack . show $ err}
-  convert (S.UnexpectedAmountOfRows _) =
-    err500 {errBody = "Unexpected amount of rows"}
+  convert LevelDebug e = err500 {errBody = LBS.pack . show $ e}
+  convert _ _ = err500
 
 logError :: MonadLogger m => Error -> m ()
-logError (DatabaseError e) =
-  logErrorN (T.pack $ show e)
+logError (DatabaseError e) = logErrorN (T.pack $ show e)
 logError (ObjectNotFoundError objId) =
   logInfoN $ T.concat ["Requested object not found: ", T.pack . show $ objId]
 logError (LoopLinksForbidden) =
