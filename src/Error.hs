@@ -1,4 +1,12 @@
-module Error (Error (..), ToServerError (..), logError) where
+-- |
+-- Module : Error
+-- Description : SuperError type and relevant bindings
+module Error
+  ( Error (..),
+    ToServerError (..),
+    logError,
+  )
+where
 
 import Control.Exception (Exception)
 import Control.Monad.Logger (LogLevel (..), MonadLogger, logErrorN, logInfoN)
@@ -10,6 +18,7 @@ import GHC.Generics (Generic)
 import Hasql.Pool (UsageError (..))
 import Servant (ServerError (..), err400, err404, err500, err503)
 
+-- | SuperError, wrapper for all error types in appliation
 data Error
   = DatabaseError UsageError
   | ObjectNotFoundError Id
@@ -19,9 +28,11 @@ data Error
 
 instance Exception Error
 
+-- | Converting SuperError to ServantError using LogLevel
 class ToServerError e where
   convert :: LogLevel -> e -> ServerError
 
+-- | Helper function to create message for not found error
 notFoundMessage :: Show a => a -> LBS.ByteString
 notFoundMessage objId =
   LBS.concat ["Object with id ", LBS.pack $ show objId, " not found"]
@@ -50,6 +61,8 @@ instance ToServerError UsageError where
   convert _ (ConnectionError _) = err503
   convert _ _ = err500
 
+-- | Write error in logger.
+-- Used because different errors produce messages of different log level
 logError :: MonadLogger m => Error -> m ()
 logError (DatabaseError e) = logErrorN (T.pack $ show e)
 logError (ObjectNotFoundError objId) =

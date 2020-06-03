@@ -1,3 +1,6 @@
+-- |
+-- Module : App
+-- Description : Describes AppM monad and relevant bindings
 module App
   ( Env (..),
     AppM (..),
@@ -26,16 +29,21 @@ import Hasql.Pool (Pool)
 import Hasql.Pool (use)
 import Servant.Swagger
 
+-- | Read-only app aata
 data Env
   = Env
-      { pool :: Pool,
+      { -- | Hasql pool
+        pool :: Pool,
+        -- | Application settings
         config :: Config
       }
   deriving (Generic)
 
+-- | App monad
 newtype AppM a
   = AppM
-      { runAppM :: ReaderT Env (LoggingT (ExceptT Error IO)) a
+      { -- | Inverse of AppM
+        runAppM :: ReaderT Env (LoggingT (ExceptT Error IO)) a
       }
   deriving
     ( Functor,
@@ -57,10 +65,12 @@ instance MonadDB AppM where
     result <- liftIO $ use (env ^. #pool) sess
     liftEither $ mapBoth DatabaseError (\_ -> ()) result
 
+-- | Write swagger to json file
 writeSwaggerJSON :: IO ()
 writeSwaggerJSON =
   BL8.writeFile "swagger.json" (encodePretty graphSwagger)
 
+-- | Swagger definition generated from API
 graphSwagger :: Swagger
 graphSwagger =
   toSwagger api

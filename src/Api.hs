@@ -1,3 +1,6 @@
+-- |
+-- Module : Api
+-- Description : Contains Servant.API.Generic description of Graph API
 module Api
   ( Routes (..),
     GraphRoutes (..),
@@ -12,12 +15,14 @@ import GHC.Generics
 import Servant
 import Servant.API.Generic
 
+-- | Top level API data type
 data Routes route
   = Routes
       { graph :: route :- "graph" :> ToServant GraphRoutes AsApi
       }
   deriving (Generic)
 
+-- | Graph API data type
 data GraphRoutes route
   = GraphRoutes
       { nodes :: route :- "node" :> ToServant NodeRoutes AsApi,
@@ -25,6 +30,7 @@ data GraphRoutes route
       }
   deriving (Generic)
 
+-- | Link API data type
 data LinkRoutes route
   = LinkRoutes
       { createLink ::
@@ -33,6 +39,7 @@ data LinkRoutes route
       }
   deriving (Generic)
 
+-- | Node API data type
 data NodeRoutes route
   = NodeRoutes
       { listNodes :: route :- Get '[JSON] [Node],
@@ -47,5 +54,7 @@ data NodeRoutes route
       }
   deriving (Generic)
 
+-- | Type proxy - phantom type info without construction of value.
+-- Required for swagger
 api :: Proxy (ToServantApi Routes)
 api = genericApi (Proxy :: Proxy Routes)

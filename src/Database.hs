@@ -1,7 +1,21 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Database where
+-- |
+-- Module : Database
+-- Description : Containsq Hasql sessions with decoders
+module Database
+  ( MonadDB (..),
+    createNode,
+    getNodes,
+    listNeighbours,
+    updateNode,
+    nodeExists,
+    linkExists,
+    createLink,
+    deleteNode,
+  )
+where
 
 import Control.Lens ((^.))
 import Control.Monad.Except (MonadError)
@@ -15,13 +29,19 @@ import Error (Error (..))
 import qualified Hasql.Session as HS
 import Hasql.TH
 
+-- | Database monad class. Used to run Hasql sessions
 class (MonadIO m, MonadError Error m) => MonadDB m where
+  -- | Accept session and return result
   runSession :: HS.Session a -> m a
+
+  -- | Accept session and discard result
   runSession_ :: HS.Session a -> m ()
 
+-- | Creates Node object from pair of id and label
 nodeDecoder :: Integral a => (a, T.Text) -> Node
 nodeDecoder (nId, nLabel) = Node {id = fromIntegral nId, label = nLabel}
 
+-- | Create node session. Returning id of created object
 createNode :: NewNode -> HS.Session Id
 createNode node = HS.statement node statement
   where
@@ -30,6 +50,7 @@ createNode node = HS.statement node statement
       [singletonStatement|
         insert into "nodes" (label) values ($1 :: text) returning id :: int4|]
 
+-- | All nodes session. Return list of all nodes (no limit :( )
 getNodes :: HS.Session [Node]
 getNodes = HS.statement () statement
   where
@@ -38,6 +59,7 @@ getNodes = HS.statement () statement
       [vectorStatement|
         select n.id :: int4, n.label :: text from "nodes" n |]
 
+-- | Delete node session. Return id of removed object if found removed
 deleteNode :: Id -> HS.Session (Maybe Int)
 deleteNode nodeId = HS.statement nodeId statement
   where
@@ -46,6 +68,7 @@ deleteNode nodeId = HS.statement nodeId statement
       [maybeStatement| delete from "nodes" where "id" = $1 :: int4
         returning "id" :: int4|]
 
+-- | Update node label session. Return updated Node
 updateNode :: Id -> NewNode -> HS.Session (Maybe Node)
 updateNode nodeId node = HS.statement (nodeId, node) statement
   where
@@ -56,6 +79,7 @@ updateNode nodeId node = HS.statement (nodeId, node) statement
         update "nodes" set "label" = $2 :: text where "id" = $1 :: int4
         returning id :: int4, label :: text|]
 
+-- | Neighbours session. Returns all nodes connected to specified through links
 listNeighbours :: Id -> HS.Session [Node]
 listNeighbours nodeId = HS.statement nodeId statement
   where
@@ -68,6 +92,7 @@ listNeighbours nodeId = HS.statement nodeId statement
         select n.id :: int4, n.label :: text from "nodes" n
         join "links" l on n.id = l.from_id where l.to_id = ($1 :: int4)|]
 
+-- | Create link session. Returns Id of links row
 createLink :: Id -> Id -> HS.Session Int
 createLink id1 id2 = HS.statement (id1, id2) statement
   where
@@ -78,6 +103,7 @@ createLink id1 id2 = HS.statement (id1, id2) statement
         insert into "links" (from_id, to_id) values ($1 :: int4, $2 :: int4)
         returning "id" :: int4|]
 
+-- | Node exists session. Checks if node with id exists, returning Bool
 nodeExists :: Id -> HS.Session Bool
 nodeExists nodeId = HS.statement nodeId statement
   where
@@ -86,6 +112,8 @@ nodeExists nodeId = HS.statement nodeId statement
       [singletonStatement|
         select exists(select 1 from nodes where id= $1 :: int4) :: bool|]
 
+-- | Link exists session.
+-- Checks if link between two nodes exists, returning Bool
 linkExists :: Id -> Id -> HS.Session Bool
 linkExists id1 id2 = HS.statement (id1, id2) statement
   where
