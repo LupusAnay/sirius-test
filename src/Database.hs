@@ -8,7 +8,7 @@ import Control.Monad.Except (MonadError)
 import Control.Monad.IO.Class (MonadIO)
 import Data (Id, NewNode (..), Node (..))
 import Data.Generics.Labels ()
-import Data.Profunctor (dimap, rmap)
+import Data.Profunctor (dimap, lmap, rmap)
 import qualified Data.Text as T
 import qualified Data.Vector as V
 import Error (Error (..))
@@ -17,6 +17,7 @@ import Hasql.TH
 
 class (MonadIO m, MonadError Error m) => MonadDB m where
   runSession :: HS.Session a -> m a
+  runSession_ :: HS.Session a -> m ()
 
 nodeDecoder :: Integral a => (a, T.Text) -> Node
 nodeDecoder (nId, nLabel) = Node {id = fromIntegral nId, label = nLabel}
@@ -52,7 +53,8 @@ updateNode nodeId node = HS.statement (nodeId, node) statement
     statement = dimap encoder (fmap nodeDecoder) query
     query =
       [maybeStatement|
-        update "nodes" set "label" = $2 :: text where "id" = $1 :: int4 returning id :: int4, label :: text|]
+        update "nodes" set "label" = $2 :: text where "id" = $1 :: int4
+        returning id :: int4, label :: text|]
 
 listNeighbours :: Id -> HS.Session [Node]
 listNeighbours nodeId = HS.statement nodeId statement
@@ -66,12 +68,32 @@ listNeighbours nodeId = HS.statement nodeId statement
         select n.id :: int4, n.label :: text from "nodes" n
         join "links" l on n.id = l.from_id where l.to_id = ($1 :: int4)|]
 
-createLink :: Id -> Id -> HS.Session (Maybe Int)
+createLink :: Id -> Id -> HS.Session Int
 createLink id1 id2 = HS.statement (id1, id2) statement
   where
     encoder (_id1, _id2) = (fromIntegral id1, fromIntegral id2)
-    statement = dimap encoder (fmap fromIntegral) query
+    statement = dimap encoder fromIntegral query
     query =
-      [maybeStatement|
+      [singletonStatement|
         insert into "links" (from_id, to_id) values ($1 :: int4, $2 :: int4)
         returning "id" :: int4|]
+
+nodeExists :: Id -> HS.Session Bool
+nodeExists nodeId = HS.statement nodeId statement
+  where
+    statement = lmap fromIntegral query
+    query =
+      [singletonStatement|
+        select exists(select 1 from nodes where id= $1 :: int4) :: bool|]
+
+linkExists :: Id -> Id -> HS.Session Bool
+linkExists id1 id2 = HS.statement (id1, id2) statement
+  where
+    encoder (_id1, _id2) = (fromIntegral id1, fromIntegral id2)
+    statement = lmap encoder query
+    query =
+      [singletonStatement| select (
+        exists(select 1 from links
+        where from_id = $1 :: int4 and to_id = $2 :: int4) or
+        exists(select 1 from links
+        where from_id = $2 :: int4 and to_id = $1 :: int4)) :: bool|]

@@ -8,14 +8,13 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as Text.Encoding
 import GHC.Generics (Generic)
 import Hasql.Pool (UsageError (..))
-import Hasql.Session (CommandError (..), QueryError (..))
-import qualified Hasql.Session as S (ResultError (..))
 import Servant (ServerError (..), err400, err404, err500, err503)
 
 data Error
   = DatabaseError UsageError
   | ObjectNotFoundError Id
   | LoopLinksForbidden
+  | LinkAlreadyExists Id Id
   deriving (Generic, Show)
 
 instance Exception Error
@@ -33,23 +32,22 @@ instance ToServerError Error where
     err404 {errBody = notFoundMessage objId}
   convert _ (LoopLinksForbidden) =
     err400 {errBody = "Loop edges are not allowed"}
+  convert _ (LinkAlreadyExists id1 id2) =
+    err400
+      { errBody =
+          LBS.pack $
+            concat
+              [ "Link connecting ",
+                show id1,
+                " and ",
+                show id2,
+                " already exist"
+              ]
+      }
 
 instance ToServerError UsageError where
-  convert LevelDebug (ConnectionError e) =
-    err503 {errBody = LBS.pack . show $ e}
+  convert LevelDebug e = err500 {errBody = LBS.pack . show $ e}
   convert _ (ConnectionError _) = err503
-  convert level (SessionError e) = convert level e
-
-instance ToServerError QueryError where
-  convert level (QueryError _ _ e) = convert level e
-
-instance ToServerError CommandError where
-  convert level (ResultError err) = convert level err
-  convert LevelDebug e = err500 {errBody = LBS.pack . show $ e}
-  convert _ (ClientError _) = err500
-
-instance ToServerError S.ResultError where
-  convert LevelDebug e = err500 {errBody = LBS.pack . show $ e}
   convert _ _ = err500
 
 logError :: MonadLogger m => Error -> m ()
@@ -57,3 +55,12 @@ logError (DatabaseError e) = logErrorN (T.pack $ show e)
 logError (ObjectNotFoundError objId) =
   logInfoN . Text.Encoding.decodeUtf8 . LBS.toStrict $ notFoundMessage objId
 logError (LoopLinksForbidden) = logInfoN "Loop links are forbidden"
+logError (LinkAlreadyExists id1 id2) =
+  logInfoN $ T.pack $
+    concat
+      [ "Link connecting ",
+        show id1,
+        " and ",
+        show id2,
+        " already exist"
+      ]

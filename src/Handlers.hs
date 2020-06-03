@@ -8,6 +8,7 @@ module Handlers
   )
 where
 
+import Control.Monad (when)
 import Control.Monad.Except (MonadError)
 import Control.Monad.Except (MonadError (throwError))
 import Control.Monad.Logger (MonadLogger, logInfoN)
@@ -36,13 +37,22 @@ changeNodeLabel nodeId newNode = do
   pure NoContent
 
 listNeighbours :: (MonadDB m) => Id -> m [Node]
-listNeighbours = runSession . DB.listNeighbours
+listNeighbours nodeId = do
+  exists <- runSession $ DB.nodeExists nodeId
+  when (not exists) (throwError $ ObjectNotFoundError nodeId)
+  runSession $ DB.listNeighbours nodeId
 
 createLink :: (MonadDB m) => Id -> Id -> m NoContent
 createLink id1 id2
   | id1 == id2 = throwError LoopLinksForbidden
   | otherwise = do
-    _ <- runSession (DB.createLink id1 id2) >>= maybeToNotFound id1
+    firstExist <- runSession $ DB.nodeExists id1
+    secondExist <- runSession $ DB.nodeExists id2
+    when (not firstExist) (throwError $ ObjectNotFoundError id1)
+    when (not secondExist) (throwError $ ObjectNotFoundError id2)
+    linkExists <- runSession $ DB.linkExists id1 id2
+    when (linkExists) (throwError $ LinkAlreadyExists id1 id2)
+    runSession_ (DB.createLink id1 id2)
     pure NoContent
 
 maybeToNotFound :: (MonadError Error m) => Id -> Maybe a -> m a

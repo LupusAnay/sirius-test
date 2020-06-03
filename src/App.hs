@@ -16,7 +16,7 @@ import Control.Monad.Reader (MonadReader, ReaderT, ask)
 import Data (Config (..))
 import Data.Aeson.Encode.Pretty (encodePretty)
 import qualified Data.ByteString.Lazy.Char8 as BL8
-import Data.Either.Combinators (mapLeft)
+import Data.Either.Combinators (mapBoth, mapLeft)
 import Data.Generics.Labels ()
 import Data.Swagger
 import Database (MonadDB (..))
@@ -50,9 +50,12 @@ newtype AppM a
 instance MonadDB AppM where
   runSession sess = do
     env <- ask
-    let dbPool = env ^. #pool
-    result <- liftIO $ use dbPool sess
+    result <- liftIO $ use (env ^. #pool) sess
     liftEither $ mapLeft DatabaseError result
+  runSession_ sess = do
+    env <- ask
+    result <- liftIO $ use (env ^. #pool) sess
+    liftEither $ mapBoth DatabaseError (\_ -> ()) result
 
 writeSwaggerJSON :: IO ()
 writeSwaggerJSON =
