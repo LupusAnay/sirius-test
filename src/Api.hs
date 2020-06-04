@@ -13,9 +13,19 @@ module Api
 where
 
 import Data (Id, NewNode, Node)
-import GHC.Generics
+import GHC.Generics (Generic)
 import Servant
-import Servant.API.Generic
+  ( (:>),
+    Capture,
+    DeleteNoContent,
+    Get,
+    JSON,
+    Proxy (..),
+    Put,
+    PutNoContent,
+    ReqBody,
+  )
+import Servant.API.Generic ((:-), AsApi, ToServant, ToServantApi, genericApi)
 import Servant.Swagger.UI (SwaggerSchemaUI)
 
 -- | Top level API data type
