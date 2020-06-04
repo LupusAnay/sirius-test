@@ -12,7 +12,7 @@ import Api
     NodeRoutes (..),
     Routes (..),
     api,
-    apiWithServant,
+    apiWithSwagger,
   )
 import App
 import Control.Lens ((^.))
@@ -78,7 +78,7 @@ nt env appValue = Handler $ servantValue
 
 -- | Wai App
 app :: Env -> Application
-app state = serve apiWithServant server'
+app state = serve apiWithSwagger server'
   where
     graphServer' = hoistServer api (nt state) (toServant routesServer)
     swaggerServer' = swaggerSchemaUIServer graphSwagger

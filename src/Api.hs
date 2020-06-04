@@ -7,8 +7,8 @@ module Api
     LinkRoutes (..),
     NodeRoutes (..),
     api,
-    apiWithServant,
-    ApiWithServant,
+    apiWithSwagger,
+    ApiWithSwagger,
   )
 where
 
@@ -58,7 +58,7 @@ data NodeRoutes route
   deriving (Generic)
 
 -- | Graph Api type united with swagger server
-type ApiWithServant = SwaggerSchemaUI "swagger" "swagger.json" :<|> (ToServantApi Routes)
+type ApiWithSwagger = SwaggerSchemaUI "swagger" "swagger.json" :<|> (ToServantApi Routes)
 
 -- | Type proxy - phantom type info without construction of value.
 -- Required for swagger
@@ -66,5 +66,5 @@ api :: Proxy (ToServantApi Routes)
 api = genericApi (Proxy :: Proxy Routes)
 
 -- | United type proxy. Required for Servant.serve
-apiWithServant :: Proxy ApiWithServant
-apiWithServant = Proxy
+apiWithSwagger :: Proxy ApiWithSwagger
+apiWithSwagger = Proxy
