@@ -24,6 +24,7 @@ data Error
   | ObjectNotFoundError Id
   | LoopLinksForbidden
   | LinkAlreadyExists Id Id
+  | ServantError ServerError
   deriving (Generic, Show)
 
 instance Exception Error
@@ -38,6 +39,7 @@ notFoundMessage objId =
   LBS.concat ["Object with id ", LBS.pack $ show objId, " not found"]
 
 instance ToServerError Error where
+  convert _ (ServantError e) = e
   convert level (DatabaseError e) = convert level e
   convert _ (ObjectNotFoundError objId) =
     err404 {errBody = notFoundMessage objId}
@@ -64,6 +66,7 @@ instance ToServerError UsageError where
 -- | Write error in logger.
 -- Used because different errors produce messages of different log level
 logError :: MonadLogger m => Error -> m ()
+logError (ServantError e) = logErrorN (T.pack $ show e)
 logError (DatabaseError e) = logErrorN (T.pack $ show e)
 logError (ObjectNotFoundError objId) =
   logInfoN . Text.Encoding.decodeUtf8 . LBS.toStrict $ notFoundMessage objId
