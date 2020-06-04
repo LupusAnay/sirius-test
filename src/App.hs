@@ -6,6 +6,7 @@ module App
     AppM (..),
     MonadDB (..),
     writeSwaggerJSON,
+    graphSwagger,
   )
 where
 

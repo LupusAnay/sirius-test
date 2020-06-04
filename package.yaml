@@ -43,6 +43,7 @@ dependencies:
   - servant-errors
   - servant-server
   - servant-swagger
+  - servant-swagger-ui
   - swagger2
   - warp
   - hasql

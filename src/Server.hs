@@ -1,7 +1,6 @@
 -- |
 -- Module      : Server
 -- Description : Contains API mappings and Wai application
---
 module Server
   ( app,
   )
@@ -12,6 +11,8 @@ import Api
     LinkRoutes (..),
     NodeRoutes (..),
     Routes (..),
+    api,
+    apiWithServant,
   )
 import App
 import Control.Lens ((^.))
@@ -22,9 +23,10 @@ import Control.Monad.Reader (runReaderT)
 import Data.Generics.Labels ()
 import Error
 import qualified Handlers as H
-import Servant (Application, Handler (..))
+import Servant ((:<|>) ((:<|>)), Application, Handler (..), hoistServer, serve)
 import Servant.API.Generic (toServant)
-import Servant.Server.Generic (AsServerT, genericServeT)
+import Servant.Server.Generic (AsServerT)
+import Servant.Swagger.UI (swaggerSchemaUIServer)
 
 -- | Servant mapping of handlers for nodes server
 nodesServer :: NodeRoutes (AsServerT AppM)
@@ -76,4 +78,8 @@ nt env appValue = Handler $ servantValue
 
 -- | Wai App
 app :: Env -> Application
-app state = genericServeT (nt state) routesServer
+app state = serve apiWithServant server'
+  where
+    graphServer' = hoistServer api (nt state) (toServant routesServer)
+    swaggerServer' = swaggerSchemaUIServer graphSwagger
+    server' = swaggerServer' :<|> graphServer'

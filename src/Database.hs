@@ -27,7 +27,7 @@ import qualified Data.Text as T
 import qualified Data.Vector as V
 import Error (Error (..))
 import qualified Hasql.Session as HS
-import Hasql.TH (singletonStatement, vectorStatement, maybeStatement)
+import Hasql.TH (maybeStatement, singletonStatement, vectorStatement)
 
 -- | Database monad class. Used to run Hasql sessions
 class (MonadIO m, MonadError Error m) => MonadDB m where

@@ -7,6 +7,8 @@ module Api
     LinkRoutes (..),
     NodeRoutes (..),
     api,
+    apiWithServant,
+    ApiWithServant,
   )
 where
 
@@ -14,6 +16,7 @@ import Data (Id, NewNode, Node)
 import GHC.Generics
 import Servant
 import Servant.API.Generic
+import Servant.Swagger.UI (SwaggerSchemaUI)
 
 -- | Top level API data type
 data Routes route
@@ -54,7 +57,14 @@ data NodeRoutes route
       }
   deriving (Generic)
 
+-- | Graph Api type united with swagger server
+type ApiWithServant = SwaggerSchemaUI "swagger" "swagger.json" :<|> (ToServantApi Routes)
+
 -- | Type proxy - phantom type info without construction of value.
 -- Required for swagger
 api :: Proxy (ToServantApi Routes)
 api = genericApi (Proxy :: Proxy Routes)
+
+-- | United type proxy. Required for Servant.serve
+apiWithServant :: Proxy ApiWithServant
+apiWithServant = Proxy
