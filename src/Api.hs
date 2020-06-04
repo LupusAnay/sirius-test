@@ -7,8 +7,8 @@ module Api
     LinkRoutes (..),
     NodeRoutes (..),
     api,
-    apiWithSwagger,
-    ApiWithSwagger,
+    SwaggerApi,
+    swaggerApi,
   )
 where
 
@@ -21,9 +21,13 @@ import Servant.Swagger.UI (SwaggerSchemaUI)
 -- | Top level API data type
 data Routes route
   = Routes
-      { graph :: route :- "graph" :> ToServant GraphRoutes AsApi
+      { graph :: route :- "graph" :> ToServant GraphRoutes AsApi,
+        swagger :: route :- SwaggerApi
       }
   deriving (Generic)
+
+-- | Swagger API
+type SwaggerApi = SwaggerSchemaUI "swagger" "swagger.json"
 
 -- | Graph API data type
 data GraphRoutes route
@@ -57,14 +61,11 @@ data NodeRoutes route
       }
   deriving (Generic)
 
--- | Graph Api type united with swagger server
-type ApiWithSwagger = SwaggerSchemaUI "swagger" "swagger.json" :<|> (ToServantApi Routes)
-
 -- | Type proxy - phantom type info without construction of value.
 -- Required for swagger
-api :: Proxy (ToServantApi Routes)
-api = genericApi (Proxy :: Proxy Routes)
+api :: Proxy (ToServantApi GraphRoutes)
+api = genericApi (Proxy :: Proxy GraphRoutes)
 
--- | United type proxy. Required for Servant.serve
-apiWithSwagger :: Proxy ApiWithSwagger
-apiWithSwagger = Proxy
+-- | Swagger type proxy
+swaggerApi :: Proxy SwaggerApi
+swaggerApi = Proxy
